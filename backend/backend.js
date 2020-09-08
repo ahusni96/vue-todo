@@ -31,23 +31,45 @@ MongoClient.connect(connString, {
             .then(results => {
                 res.send(results)
             })
-            .catch(error => console.error(error))
+            .catch(error => console.log(error))
     })
 
     app.post('/todos/add', (req, res) => {
         todo.insertOne(req.body)
-            .then(result => {
-                res.send(result)
+            .then(() => {
+                res.send("Data added successfully!")
             })
             .catch(error => console.error(error))
+    })
+
+    app.put('/todos/edit/:taskId', (req, res) => {
+        todo.findOneAndUpdate(
+            { 
+                _id: ObjectID(req.params.taskId) 
+            }, 
+            {
+                $set: {
+                    title: req.body.title,
+                    status: req.body.status
+                }
+            },
+            {
+                upsert: true
+            }
+        )
+            .then(() => {
+                res.send("Data updated succesfully")
+            })
+            .catch(error => console.log(error))
     })
 
     app.delete('/todos/delete/:taskId', (req, res) => {
         todo.deleteOne({ 
             _id: ObjectID(req.params.taskId)
         })
-            .then((results) => {
-                res.send(results)
-            }, error => console.log(error))
+            .then(() => {
+                res.send("Data deleted forever!")
+            })
+            .catch(error => console.log(error))
     })
 })
