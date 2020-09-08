@@ -1,11 +1,53 @@
+const bodyParser = require('body-parser')
 const express = require('express')
 const app = express()
 const port = 3000
 
-app.get('/', (req, res) => {
-    res.send("Hello World from Express.js!")
-})
+const MongoClient = require('mongodb').MongoClient
+const ObjectID = require('mongodb').ObjectID
 
-app.listen(port, () => {
-    console.log(`Listening from port: ${port}...`)
+const connString = "mongodb+srv://ahusni96:ahusni96@cluster0.gjnax.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority"
+
+MongoClient.connect(connString, {
+    useUnifiedTopology: true
+}, (err, client) => {
+    if (err) {
+        return console.error(err)
+    }
+    app.listen(port)
+    console.log("Connected to Database!")
+    
+    const db = client.db('playground')
+    const todo = db.collection('todo')
+
+    app.use(bodyParser.json())
+
+    app.get('/', (req, res) => {
+        res.send("Hello World from Express.js!")
+    })
+
+    app.get('/todos', (req, res) => {
+        todo.find().toArray()
+            .then(results => {
+                res.send(results)
+            })
+            .catch(error => console.error(error))
+    })
+
+    app.post('/todos/add', (req, res) => {
+        todo.insertOne(req.body)
+            .then(result => {
+                res.send(result)
+            })
+            .catch(error => console.error(error))
+    })
+
+    app.delete('/todos/delete/:taskId', (req, res) => {
+        todo.deleteOne({ 
+            _id: ObjectID(req.params.taskId)
+        })
+            .then((results) => {
+                res.send(results)
+            }, error => console.log(error))
+    })
 })
