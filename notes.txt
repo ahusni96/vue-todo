@@ -1,0 +1,1 @@
+mongodb+srv://ahusni96:ahusni96@cluster0.gjnax.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority
