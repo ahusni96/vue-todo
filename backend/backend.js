@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser')
 const express = require('express')
 const cors = require('cors')
+const { isNull } = require('util')
 const app = express()
 const port = 3000
 
@@ -20,6 +21,7 @@ MongoClient.connect(connString, {
     
     const db = client.db('playground')
     const todo = db.collection('todo')
+    const users = db.collection('users')
 
     app.use(bodyParser.json())
     app.use(cors())
@@ -30,18 +32,18 @@ MongoClient.connect(connString, {
 
     app.get('/todos', (req, res) => {
         todo.find().toArray()
-            .then(results => {
-                res.send(results)
-            })
-            .catch(error => console.log(error))
+        .then(results => {
+            res.send(results)
+        })
+        .catch(error => console.log(error))
     })
 
     app.post('/todos/add', (req, res) => {
         todo.insertOne(req.body)
-            .then(() => {
-                res.send("Data added successfully!")
-            })
-            .catch(error => console.error(error))
+        .then(() => {
+            res.send("Data added successfully!")
+        })
+        .catch(error => console.error(error))
     })
 
     app.put('/todos/edit/:taskId', (req, res) => {
@@ -59,19 +61,62 @@ MongoClient.connect(connString, {
                 upsert: true
             }
         )
-            .then(() => {
-                res.send("Data updated succesfully")
-            })
-            .catch(error => console.log(error))
+        .then(() => {
+            res.send("Data updated succesfully")
+        })
+        .catch(error => console.log(error))
     })
 
     app.delete('/todos/delete/:taskId', (req, res) => {
         todo.deleteOne({ 
             _id: ObjectID(req.params.taskId)
         })
-            .then(() => {
-                res.send("Data deleted forever!")
-            })
-            .catch(error => console.log(error))
+        .then(() => {
+            res.send("Data has been deleted forever!")
+        })
+        .catch(error => console.log(error))
+    })
+
+    app.post('/register', (req, res) => {
+        users.findOne({
+            username: req.body.username
+        })
+        .then(result => {
+           if (result === null) {
+                users.insertOne(req.body)
+                .then(() => {
+                    // Registration success
+                    res.send(true)
+                })
+                .catch(error => console.log(error))
+           }
+           else {
+               // Username has been taken
+               res.send(false)
+           }
+        })
+        .catch(error => {
+            console.log(error)
+        })
+    })
+
+    app.post('/login', (req, res) => {
+        users.findOne({
+            $and: [
+                { username: req.body.username },
+                { password: req.body.password }
+            ]
+        })
+        .then(result => {
+            if (result === null) {
+                // Login fail
+                res.send(false)
+            }
+            else {
+                // Login success
+                res.send(true)
+            }
+        })
+        .catch(error => console.log(error))
     })
 })

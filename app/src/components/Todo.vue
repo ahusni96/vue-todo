@@ -145,7 +145,6 @@ export default {
     watch: {
         alert(val) {
             if (!val) return
-
             setTimeout(() => (this.alert = false), 4000)
         }
     }

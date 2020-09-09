@@ -1,6 +1,7 @@
 <template>
   <v-app id="inspire">
     <v-navigation-drawer
+      v-if="loggedIn"
       v-model="drawer"
       app
     >
@@ -29,8 +30,12 @@
       color="indigo"
       dark
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" v-if="loggedIn"></v-app-bar-nav-icon>
       <v-toolbar-title>Todo</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon @click="logout" v-if="loggedIn">
+        <v-icon>mdi-exit-to-app</v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-main>
@@ -50,9 +55,28 @@
     props: {
       source: String,
     },
-
     data: () => ({
       drawer: false,
+      loggedIn: false
     }),
+    beforeUpdate() {
+      if (this.$router.currentRoute.path === "/takeoff") {
+        this.loggedIn = false
+      }
+      else {
+        this.loggedIn = true
+      }
+    },
+    updated() {
+      if (!this.$session.has('user') && (this.$router.currentRoute.path !== "/takeoff")) {
+        this.$router.push('/takeoff')
+      }
+    },
+    methods: {
+      logout() {
+        this.$session.destroy()
+        this.$router.push('/takeoff')
+      }
+    }
   }
 </script>
