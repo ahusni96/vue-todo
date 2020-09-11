@@ -60,7 +60,7 @@ export default {
                 password: this.password
             }
 
-            this.$http.post('http://localhost:3000/login', user)
+            this.$http.post('http://localhost:5000/login', user)
             .then(response => {
                 if (!response.body) {
                     this.message = "Incorrect username/password"
@@ -80,7 +80,7 @@ export default {
                 password: this.password
             }
 
-            this.$http.post('http://localhost:3000/register', user)
+            this.$http.post('http://localhost:5000/register', user)
             .then(response => {
                 if (!response.body) {
                     this.message = "Username has been taken!"

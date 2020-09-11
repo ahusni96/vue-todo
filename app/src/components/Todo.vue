@@ -82,11 +82,12 @@ export default {
         },
         submit() {
             let task = {
+                user: this.$session.get('user'),
                 title: this.title,
                 status: this.status
             }
 
-            this.$http.post('http://localhost:3000/todos/add', task)
+            this.$http.post('http://localhost:5000/todos/add', task)
             .then(response => {
                 //console.log(response.body)
                 this.showAlert(response.body)
@@ -101,7 +102,7 @@ export default {
                 status: this.status
             }
 
-            this.$http.put(`http://localhost:3000/todos/edit/${this.id}`, task)
+            this.$http.put(`http://localhost:5000/todos/edit/${this.id}`, task)
             .then(response => {
                 //console.log(response.body)
                 this.showAlert(response.body)
@@ -110,7 +111,7 @@ export default {
             }, error => console.log(error))
         },
         deleteTask(id) {
-            this.$http.delete(`http://localhost:3000/todos/delete/${id}`)
+            this.$http.delete(`http://localhost:5000/todos/delete/${id}`)
             .then(response => {
                 //console.log(response.body)
                 this.showAlert(response.body)
@@ -132,7 +133,7 @@ export default {
             this.editing = false
         },
         getTodos() {
-            this.$http.get('http://localhost:3000/todos')
+            this.$http.get(`http://localhost:5000/todos/${this.$session.get('user')}`)
             .then(response => {
                 this.tasks = response.body
             }, error => console.log(error))

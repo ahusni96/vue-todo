@@ -1,14 +1,13 @@
 const bodyParser = require('body-parser')
 const express = require('express')
 const cors = require('cors')
-const { isNull } = require('util')
 const app = express()
-const port = 3000
+const port = 5000
 
 const MongoClient = require('mongodb').MongoClient
 const ObjectID = require('mongodb').ObjectID
 
-const connString = "mongodb+srv://ahusni96:ahusni96@cluster0.gjnax.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority"
+const connString = "mongodb+srv://ahusni96:ahusni96@cluster0.gjnax.gcp.mongodb.net/playground?retryWrites=true&w=majority"
 
 MongoClient.connect(connString, {
     useUnifiedTopology: true
@@ -17,7 +16,7 @@ MongoClient.connect(connString, {
         return console.error(err)
     }
     app.listen(port)
-    console.log("Connected to Database!")
+	console.log(`Connected to Database at port:${port}!`)
     
     const db = client.db('playground')
     const todo = db.collection('todo')
@@ -30,8 +29,12 @@ MongoClient.connect(connString, {
         res.send("Hello World from Express.js!")
     })
 
-    app.get('/todos', (req, res) => {
-        todo.find().toArray()
+    /* ******************** */
+    /* Todos                */
+    /* ******************** */
+
+    app.get('/todos/:user', (req, res) => {
+        todo.find({ user: req.params.user }).toArray()
         .then(results => {
             res.send(results)
         })
@@ -77,6 +80,20 @@ MongoClient.connect(connString, {
         .catch(error => console.log(error))
     })
 
+    /* ******************** */
+    /* Profile              */
+    /* ******************** */
+
+    app.get('/user/:username', (req, res) => {
+        users.findOne({
+            username: req.params.username
+        })
+        .then(result => {
+            res.send(result)
+        })
+        .catch(error => console.log(error))
+    })
+
     app.post('/register', (req, res) => {
         users.findOne({
             username: req.body.username
@@ -116,6 +133,45 @@ MongoClient.connect(connString, {
                 // Login success
                 res.send(true)
             }
+        })
+        .catch(error => console.log(error))
+    })
+
+    app.put('/user/edit/:userID', (req, res) => {
+        users.findOneAndUpdate(
+            {
+                _id: ObjectID(req.params.userID)
+            },
+            {
+                $set: {
+                    username: req.body.username,
+                    password: req.body.password
+                }    
+            },
+            {
+                upsert: false
+            }
+        )
+        .then(() => {
+            res.send("Profile has been updated!")
+        })
+        .catch(error => console.log(error))
+    })
+
+    app.delete('/user/delete/:user', (req, res) => {
+        users.deleteOne(
+            {
+                username: req.params.user
+            }
+        )
+        .then(() => {
+            todo.deleteMany({
+                user: req.params.user
+            })
+            .then(() => console.log(`All entries for ${req.params.user} has been deleted!`))
+            .catch(error => console.log(error))
+
+            res.send("User has been deleted!")
         })
         .catch(error => console.log(error))
     })
